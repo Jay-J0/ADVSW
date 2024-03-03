@@ -1,0 +1,97 @@
+#ALS1
+en
+conf t
+hostname ALS1
+vlan 10
+exit
+vlan 20
+exit
+spanning-tree mode rapid-pvst
+interface fa0/1
+switchport access vlan 10
+switchport mode access
+switchport port-security
+switchport port-security mac-address sticky
+switchport port-security violation shutdown
+switchport port-security maximum 1
+spanning-tree portfast
+interface range fa0/2 - 3
+switchport mode trunk
+interface fa0/4
+spanning-tree bpduguard enable
+exit
+exit
+copy running-config startup-config
+
+#ALS2
+en
+conf t
+hostname ALS2
+vlan 10
+exit
+vlan 20
+exit
+spanning-tree mode rapid-pvst
+interface fa0/1
+switchport access vlan 20
+switchport mode access
+spanning-tree portfast
+interface range fa0/2 - 3
+switchport mode trunk
+exit
+exit
+copy running-config startup-config
+
+#MLS1
+en
+conf t
+hostname MLS1
+ip routing
+vlan 10
+exit
+vlan 20
+exit
+spanning-tree vlan 10 priority 4096
+spanning-tree vlan 20 priority 8192
+spanning-tree mode rapid-pvst
+interface vlan10
+ip address 192.168.10.1 255.255.255.0  
+no shutdown
+interface vlan 20
+ip address 192.168.20.2 255.255.255.0  
+no shutdown
+interface range fa0/2-3
+switchport mode trunk
+exit
+exit
+copy running-config startup-config
+
+#MLS2
+en
+conf t
+hostname MLS2
+ip routing
+vlan 10
+exit
+vlan 20
+exit
+spanning-tree vlan 10 priority 8192
+spanning-tree vlan 20 priority 4096
+spanning-tree mode rapid-pvst
+interface vlan10
+ip address 192.168.10.2 255.255.255.0  
+no shutdown
+interface vlan 20
+ip address 192.168.20.1 255.255.255.0  
+no shutdown
+interface range fa0/2-3
+switchport mode trunk
+exit
+exit
+copy running-config startup-config
+
+#EXTRA
+show spanning-tree
+show spanning-tree summary
+show spanning-tree interface fa0/1
+show port-security

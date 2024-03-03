@@ -1,0 +1,137 @@
+#ALS1
+en
+conf t
+hostname ALS1
+vlan 10
+exit
+vlan 20
+exit
+interface fa0/7
+switchport access vlan 10
+switchport mode access
+interface range fa0/1 - 2 
+channel-group 1 mode passive
+interface port-channel 1 
+switchport mode trunk
+interface range fa0/5 - 6
+channel-group 2 mode passive
+interface port-channel 2
+switchport mode trunk
+exit
+exit
+copy running-config startup-config
+
+#ALS2
+en
+conf t
+hostname ALS2
+vlan 10
+exit
+vlan 20
+exit
+interface fa0/7
+switchport access vlan 20
+switchport mode access
+interface range fa0/1 - 2 
+channel-group 3 mode passive
+interface port-channel 3
+switchport mode trunk
+interface range fa0/5 - 6
+channel-group 4 mode passive
+interface port-channel 4
+switchport mode trunk
+exit
+exit
+copy running-config startup-config
+
+#DLS1
+en
+conf t
+hostname DLS1
+ip routing
+vlan 10
+exit
+vlan 20
+exit
+interface vlan10
+ip address 192.168.10.1 255.255.255.0  
+no shutdown
+interface range fa0/3-4
+no switchport
+channel-group 5 mode active
+exit
+interface Port-Channel 5
+ip address 192.168.0.1 255.255.255.252 
+no shutdown
+interface range fa0/1 - 2 
+channel-group 1 mode active
+interface port-channel 1 
+switchport mode trunk
+interface range fa0/5 - 6
+channel-group 4 mode active
+interface port-channel 4 
+switchport mode trunk
+interface fa0/7
+no switchport
+ip address 192.168.0.6 255.255.255.252
+ip route 10.0.0.1 255.255.255.255 192.168.0.5
+ip route 192.168.20.0 255.255.255.0 192.168.0.2
+exit
+copy running-config startup-config
+
+#DLS2
+en
+conf t
+hostname DLS2
+ip routing
+vlan 10
+exit
+vlan 20
+exit
+interface vlan20
+ip address 192.168.20.1 255.255.255.0 
+no shutdown
+interface range fa0/3-4
+no switchport
+channel-group 5 mode passive
+exit
+interface Port-Channel 5
+ip address 192.168.0.2 255.255.255.252 
+no shutdown
+interface range fa0/1 - 2
+channel-group 3 mode active
+interface port-channel 3
+switchport mode trunk
+interface range fa0/5 - 6
+channel-group 4 mode active
+interface port-channel 4
+switchport mode trunk
+interface fa0/7
+no switchport
+ip address 192.168.0.10 255.255.255.252
+ip route 10.0.0.1 255.255.255.255 192.168.0.9
+ip route 192.168.10.0 255.255.255.0 192.168.0.1
+exit
+copy running-config startup-config
+
+#R1
+en
+conf t
+hostname R1
+int g0/0
+ip address 192.168.0.5 255.255.255.252  
+no shut
+int g0/1
+ip address 192.168.0.9 255.255.255.252  
+no shut
+interface Loopback0
+ip address 10.0.0.1 255.255.255.255
+no shut
+ip route 192.168.10.0 255.255.255.0 192.168.0.6
+ip route 192.168.20.0 255.255.255.0 192.168.0.10
+exit
+copy running-config startup-config
+
+#Extra
+show etherchannel summary
+show vlan brief

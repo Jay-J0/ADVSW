@@ -1,0 +1,62 @@
+#SW1
+en
+conf t
+hostname SW1
+snmp-server community read ro
+snmp-server community write rw
+exit
+exit
+copy running-config startup-config
+
+#SW2
+en
+conf t
+hostname SW2
+snmp-server community read ro
+snmp-server community write rw
+exit
+exit
+copy running-config startup-config
+
+
+#R1
+en
+conf t
+hostname R1
+snmp-server community read ro
+snmp-server community write rw
+int se0/1/0
+ip address 172.16.1.1 255.255.255.252  
+no shut
+int fa0/0
+ip address 192.168.1.1 255.255.255.0
+no shut
+ip flow ingress
+ip flow egress
+exit
+ip flow-export destination 192.168.1.15 9996
+ip flow-export version 9
+ip route 192.168.2.0 255.255.255.0 172.16.1.2
+exit
+copy running-config startup-config
+
+#R2
+en
+conf t
+hostname R2
+snmp-server community read ro
+snmp-server community write rw
+int se0/1/0
+ip address 172.16.1.2 255.255.255.252  
+no shut
+int fa0/0
+ip address 192.168.2.1 255.255.255.0
+no shut
+ip route 192.168.1.0 255.255.255.0 172.16.1.1
+exit
+copy running-config startup-config
+
+#Extra
+show ip cache flow
+
+

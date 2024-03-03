@@ -1,0 +1,213 @@
+#ALS1
+en
+conf t
+hostname ALS1
+vlan 10
+exit
+vlan 20
+exit
+
+interface fa0/7
+switchport access vlan 10
+switchport mode access
+
+interface range fa0/1 - 2 
+channel-group 1 mode passive
+interface port-channel 1 
+switchport mode trunk
+
+interface range fa0/5 - 6
+channel-group 2 mode passive
+interface port-channel 2
+switchport mode trunk
+
+interface range fa0/3 - 4
+channel-group 6 mode active
+interface port-channel 6
+switchport mode trunk
+exit
+exit
+copy running-config startup-config
+
+#ALS2
+en
+conf t
+hostname ALS2
+vlan 10
+exit
+vlan 20
+exit
+
+interface fa0/7
+switchport access vlan 20
+switchport mode access
+
+interface range fa0/1 - 2 
+channel-group 3 mode passive
+interface port-channel 3
+switchport mode trunk
+
+interface range fa0/5 - 6
+channel-group 4 mode passive
+interface port-channel 4
+switchport mode trunk
+interface range fa0/3 - 4
+
+channel-group 6 mode passive
+interface port-channel 6
+switchport mode trunk
+exit
+exit
+copy running-config startup-config
+
+#DLS1
+en
+conf t
+hostname DLS1
+ip routing
+vlan 10
+exit
+vlan 20
+exit
+
+spanning-tree vlan 10 root primary
+spanning-tree vlan 20 root secondary
+
+interface vlan 10
+ip address 192.168.10.2 255.255.255.0  
+standby 10 ip 192.168.10.1
+standby 10 priority 105
+standby 10 preempt
+standby 10 track fa0/7
+
+interface vlan 20
+ip address 192.168.20.2 255.255.255.0  
+standby 20 ip 192.168.20.1
+standby 20 priority 100
+standby 20 preempt
+standby 20 track fa0/7
+
+interface range fa0/3-4
+no switchport
+channel-group 5 mode active
+interface Port-Channel 5
+ip address 192.168.0.1 255.255.255.252 
+
+interface range fa0/1 - 2 
+channel-group 1 mode active
+interface port-channel 1 
+switchport mode trunk
+
+interface range fa0/5 - 6
+channel-group 4 mode active
+interface port-channel 4 
+switchport mode trunk
+
+interface fa0/7
+no switchport
+ip address 192.168.0.6 255.255.255.252
+
+router rip
+version 2
+network 192.168.0.4
+network 192.168.0.0
+network 192.168.10.0
+network 192.168.20.0
+exit
+exit
+copy running-config startup-config
+
+#DLS2
+en
+conf t
+hostname DLS2
+ip routing
+vlan 10
+exit
+vlan 20
+exit
+spanning-tree vlan 20 root primary
+spanning-tree vlan 10 root secondary
+
+interface vlan 10
+ip address 192.168.10.3 255.255.255.0  
+standby 10 ip 192.168.10.1
+standby 10 priority 100
+standby 10 preempt
+standby 10 track fa0/7
+
+interface vlan 20
+ip address 192.168.20.3 255.255.255.0  
+standby 20 ip 192.168.20.1
+standby 20 priority 105
+standby 20 preempt
+standby 20 track fa0/7
+
+interface range fa0/3-4
+no switchport
+channel-group 5 mode active
+interface Port-Channel 5
+ip address 192.168.0.2 255.255.255.252 
+
+interface range fa0/1 - 2
+channel-group 3 mode active
+interface port-channel 3
+switchport mode trunk
+
+interface range fa0/5 - 6
+channel-group 2 mode active
+interface port-channel 2
+switchport mode trunk
+
+interface fa0/7
+no switchport
+ip address 192.168.0.10 255.255.255.252
+
+router rip
+version 2
+network 192.168.0.4
+network 192.168.0.0
+network 192.168.10.0
+network 192.168.20.0
+exit
+exit
+copy running-config startup-config
+
+#R1
+en
+conf t
+hostname R1
+int g0/0
+ip address 192.168.0.5 255.255.255.252
+no shutdown
+exit
+
+int g0/1
+ip address 192.168.0.9 255.255.255.252
+no shutdown
+exit
+
+interface Loopback0
+ip address 10.0.0.1 255.255.255.255
+no shutdown
+exit
+
+router rip
+version 2
+network 192.168.0.4
+network 192.168.0.8
+network 10.0.0.1
+exit
+exit
+copy running-config startup-config
+
+#Extra
+show etherchannel
+
+show etherchannel summary
+show vlan brief
+show spanning-tree summary
+show spanning-tree 
+show standby
+show standby brief
+
