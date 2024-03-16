@@ -1,0 +1,114 @@
+#MLS1
+en
+conf t
+hostname MLS1
+ip routing
+
+vlan 10
+exit
+
+access-list 101 permit ip any host 192.168.1.5
+access-list 102 permit ip any host 192.168.0.6
+
+class-map match-any WEB_SERVER_TRAFFIC
+match access-group 101
+exit
+
+class-map match-any IP_PHONE_TRAFFIC
+match access-group 102
+exit
+
+policy-map QOS_POLICY
+class WEB_SERVER_TRAFFIC
+bandwidth percent 20
+class IP_PHONE_TRAFFIC
+set ip dscp ef
+priority percent 40
+class class-default
+bandwidth percent 2
+exit
+
+interface vlan 10
+ip address 192.168.0.1 255.255.255.0  
+
+interface fa0/1
+switchport mode trunk
+service-policy input QOS_POLICY
+service-policy output QOS_POLICY
+
+interface fa0/2
+no switchport
+ip address 192.168.1.2 255.255.255.0  
+service-policy input QOS_POLICY
+service-policy output QOS_POLICY
+
+router rip
+version 2
+network 192.168.0.0
+network 192.168.1.0
+
+exit
+exit
+copy running-config startup-config
+
+#ALS1
+en
+conf t
+hostname ALS1
+vlan 10
+exit
+
+interface fa0/1
+switchport access vlan 10
+switchport mode access
+
+interface fa0/2
+switchport access vlan 10
+switchport mode access
+
+interface fa0/6
+switchport mode trunk
+
+exit
+exit
+copy running-config startup-config
+
+#ALS2
+en
+conf t
+hostname ALS2
+
+exit
+exit
+copy running-config startup-config
+
+
+#R1
+en
+conf t
+hostname R1
+
+int g0/0/0
+ip address 192.168.1.1 255.255.255.0
+no shutdown
+exit
+
+router rip
+version 2
+network 192.168.0.0
+network 192.168.1.0
+
+exit
+exit
+copy running-config startup-config
+
+#Extra
+show vlan brief
+show class-map
+show policy-map 
+show policy-map int fa0/1
+show policy-map int fa0/2
+
+
+
+

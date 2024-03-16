@@ -1,0 +1,144 @@
+#R1 (Zonder VPN)
+en
+conf t
+hostname R1
+
+int fa0/0
+ip address 192.168.3.1 255.255.255.252
+no shut  
+exit
+
+int fa0/1
+ip address 192.168.0.1 255.255.255.0
+no shut
+exit
+
+router rip
+version 2
+network 192.168.0.0
+network 192.168.3.0
+
+exit
+exit
+copy running-config startup-config 
+
+#R2 (Zonder VPN)
+en
+conf t
+hostname R2
+
+int fa0/0
+ip address 192.168.3.2 255.255.255.252
+no shut  
+exit
+
+int fa0/1
+ip address 192.168.1.1 255.255.255.0
+no shut
+exit
+
+router rip
+version 2
+network 192.168.1.0
+network 192.168.3.0
+
+exit
+exit
+copy running-config startup-config 
+
+#R1 (Met VPN)
+en
+conf t
+hostname R1
+
+crypto isakmp enable
+crypto isakmp policy 10
+encryption aes
+authentication pre-share
+hash sha
+group 2
+exit
+crypto isakmp key MY_PASSWORD address 192.168.3.2
+
+crypto ipsec transform-set MY_TRANSFORM_SET esp-aes esp-sha-hmac
+crypto ipsec security-association lifetime seconds 3600 
+
+ip access-list extended MYVPN
+permit ip 192.168.0.0 0.0.0.255 192.168.1.0 0.0.0.255 
+exit
+
+crypto map CMAP 10 ipsec-isakmp                             
+match address MYVPN                                          
+set peer 192.168.3.2                                        
+set pfs group2                                           
+set transform-set MY_TRANSFORM_SET 
+exit  
+
+int fa0/0
+ip address 192.168.3.1 255.255.255.252
+crypto map CMAP
+no shut  
+exit
+
+int fa0/1
+ip address 192.168.0.1 255.255.255.0
+no shut
+exit
+
+router rip
+version 2
+network 192.168.0.0
+network 192.168.3.0
+
+exit
+exit
+copy running-config startup-config 
+
+#R2 (Met VPN)
+en
+conf t
+hostname R2
+
+crypto isakmp enable
+crypto isakmp policy 10
+encryption aes
+authentication pre-share
+hash sha
+group 2
+exit
+crypto isakmp key MY_PASSWORD address 192.168.3.1
+
+crypto ipsec transform-set MY_TRANSFORM_SET esp-aes esp-sha-hmac
+crypto ipsec security-association lifetime seconds 3600 
+
+ip access-list extended MYVPN
+permit ip 192.168.1.0 0.0.0.255 192.168.0.0 0.0.0.255 
+exit
+
+crypto map CMAP 10 ipsec-isakmp                             
+match address MYVPN                                          
+set peer 192.168.3.1                                       
+set pfs group2                                           
+set transform-set MY_TRANSFORM_SET 
+exit  
+
+int fa0/0
+ip address 192.168.3.2 255.255.255.252
+crypto map CMAP
+no shut  
+exit
+
+int fa0/1
+ip address 192.168.1.1 255.255.255.0
+no shut
+exit
+
+router rip
+version 2
+network 192.168.1.0
+network 192.168.3.0
+
+exit
+exit
+copy running-config startup-config 
+

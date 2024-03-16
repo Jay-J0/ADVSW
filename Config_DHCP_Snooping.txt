@@ -1,0 +1,84 @@
+#ALS1
+en
+conf t
+hostname ALS1
+
+ip dhcp snooping 
+int fa0/1
+ip dhcp snooping trust
+interface range fa0/2-3
+ip dhcp snooping limit rate 20  
+
+exit
+exit
+copy running-config startup-config
+
+#ALS2
+en
+conf t
+hostname ALS2
+exit
+copy running-config startup-config
+
+#R1
+en
+conf t
+hostname R1
+
+int g0/0
+ip address 192.168.0.1 255.255.255.0
+ip helper-address 192.168.2.2
+no shutdown
+exit
+
+int g0/1
+ip address 192.168.2.1 255.255.255.0
+no shutdown
+exit
+
+int g0/2
+ip address 192.168.255.2 255.255.255.252
+no shutdown
+exit
+
+router rip
+version 2
+network 192.168.0.0
+network 192.168.2.0
+network 192.168.255.0
+exit
+exit
+copy running-config startup-config
+
+#R2
+en
+conf t
+hostname R2
+int g0/0
+ip address 192.168.255.1 255.255.255.252
+no shutdown
+exit
+
+interface Loopback0
+ip address 10.0.0.1 255.255.255.255
+no shutdown
+exit
+
+router rip
+version 2
+network 192.168.255.0
+network 10.0.0.1
+exit
+exit
+copy running-config startup-config
+
+#Extra
+sh ip dhcp snooping 
+show ip dhcp snooping binding
+
+DHCP server (pool 192.168.0.0/24)
+Ip address: 192.168.0.2
+
+#DHCP server (pool 192.168.1.0/24)
+IP address 192.168.1.2
+
